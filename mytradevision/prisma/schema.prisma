@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+
+  accounts      Account[]
+  sessions      Session[]
+  trades        Trade[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Trade {
+  id             String    @id @default(cuid())
+  userId         String
+  stock          String
+  entryAt        DateTime
+  exitAt         DateTime?
+  buyPrice       Decimal
+  sellPrice      Decimal?
+  quantity       Int
+  strategyName   String
+  targetPrice    Decimal?
+  stopLossPrice  Decimal?
+  indicators     TradeIndicator[]
+  notes          String?
+  profitLoss     Decimal // computed server-side
+  outcome        String  // "PROFIT" | "LOSS" | "OPEN"
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, entryAt])
+  @@index([userId, stock])
+  @@index([userId, strategyName])
+}
+
+model Indicator {
+  id   String  @id @default(cuid())
+  name String  @unique
+
+  trades TradeIndicator[]
+}
+
+model TradeIndicator {
+  tradeId     String
+  indicatorId String
+
+  trade     Trade     @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  indicator Indicator @relation(fields: [indicatorId], references: [id], onDelete: Cascade)
+
+  @@id([tradeId, indicatorId])
+}
