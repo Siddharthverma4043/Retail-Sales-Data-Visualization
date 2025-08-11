@@ -1,0 +1,37 @@
+@import "tailwindcss";
+@reference "tailwindcss";
+
+:root {
+  --bg: #0a0f16;
+  --card: rgba(16, 24, 36, 0.7);
+  --muted: #a0b4c8;
+  --neon: #00f0ff;
+  --neon2: #00ff88;
+}
+
+html, body {
+  background: var(--bg);
+}
+
+.glass {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.02);
+  border-radius: 16px;
+}
+
+.neon-text {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.btn-primary {
+  @apply px-5 py-3 rounded-lg font-semibold transition-colors;
+  background: linear-gradient(135deg, var(--neon), var(--neon2));
+  color: #0a0f16;
+}
+
+.btn-outline {
+  @apply px-5 py-3 rounded-lg font-semibold transition-colors border;
+  border-color: rgba(255, 255, 255, 0.2);
+}
