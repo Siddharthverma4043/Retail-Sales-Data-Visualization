@@ -1,9 +1,10 @@
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 export async function GET(req: Request) {
-  const session = await auth();
+  const session = (await getServerSession(authOptions as any)) as any;
   if (!session?.user) return Response.json({ message: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
   const start = searchParams.get("start") ? new Date(searchParams.get("start")!) : undefined;
   const end = searchParams.get("end") ? new Date(searchParams.get("end")!) : undefined;
 
-  const where: any = { userId: session.user.id };
+  const where: any = { userId: (session.user as any).id };
   if (strategy) where.strategyName = strategy;
   if (stock) where.stock = stock;
   if (plType === "profit") where.profitLoss = { gt: 0 };
@@ -47,7 +48,7 @@ const tradeSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
+  const session = (await getServerSession(authOptions as any)) as any;
   if (!session?.user) return Response.json({ message: "Unauthorized" }, { status: 401 });
   const json = await req.json();
   const body = tradeSchema.parse(json);
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
 
   const trade = await prisma.trade.create({
     data: {
-      userId: session.user.id,
+      userId: (session.user as any).id,
       stock: body.stock,
       executedAt: body.executedAt,
       entryPrice: body.entryPrice,

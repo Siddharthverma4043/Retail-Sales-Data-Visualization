@@ -1,8 +1,9 @@
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
-  const session = await auth();
+  const session = (await getServerSession(authOptions as any)) as any;
   if (!session?.user) return Response.json({ message: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -11,7 +12,7 @@ export async function GET(req: Request) {
 
   const trades = await prisma.trade.findMany({
     where: {
-      userId: session.user.id,
+      userId: (session.user as any).id,
       executedAt: { gte: start, lte: end },
     },
     orderBy: { executedAt: "asc" },
